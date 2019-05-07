@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <title>Wall Painter</title>
+</head>
+
+<body>
+  <div class="jumbotron">
+    <h2>Welcome to Wall Painter</h2>
+  </div>
+  <div class="alert alert-warning"><strong id="status">OpenCV.js is loading...</strong></div>
+  <div class="container">
+    <div class="row alert alert-success"><h3>Pick a color : </h3></div>
+    <div class="row">
+      <label for="red">red channel</label>
+      <input type="text" id="red" class="form-control" placeholder="100">
+      <label for="green">green channel</label>
+      <input type="text" id="green" class="form-control" placeholder="100">
+      <label for="blue">blue channel</label>
+      <input type="text" id="blue" class="form-control" placeholder="100">
+      <label id="color"></label>
+    </div>
+    <div class="row">
+      <img id="imageSrc" alt="Input Image" hidden="true" />
+      <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12 col-md-6 view"><canvas id="canvasOutput" ></canvas></div>
+      <div class="col-xs-12 col-md-6 view"><img id="imageDst" alt="Output image"/></div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script async src="opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    var host = 'http://127.0.0.1:5000/';
+    var socket = io.connect(host);
+    socket.on('connect', function () {
+      console.log('connected');
+
+      socket.emit('connected', { data: 'I\'m connected!' });
+
+    });
+    socket.on('img', (data) => {
+      let outElement = document.getElementById('imageDst')
+      console.log(data);
+      outElement.src = data.link + '?' + Date.now().toString()
+
+    })
+  </script>
+  <script type="text/javascript">
+    var src, x, y , r = 100 , g = 100, b = 100;
+    let imgElement = document.getElementById('imageSrc');
+    let inputElement = document.getElementById('fileInput');
+    inputElement.addEventListener('change', (e) => {
+      imgElement.src = URL.createObjectURL(e.target.files[0]);
+    }, false);
+    imgElement.onload = function () {
+      src = cv.imread(imgElement);
+      cv.resize(src, src, dsize = new cv.Size(400, 400))
+      cv.imshow('canvasOutput', src);
+      cv.cvtColor(src, src, cv.COLOR_RGBA2BGR)
+
+    };
+    function onOpenCvReady() {
+      document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+    }
+  </script>
+  <script>
+    $('#canvasOutput').click(function (e) {
+      let offset_t = $(this).offset().top - $(window).scrollTop();
+      let offset_l = $(this).offset().left - $(window).scrollLeft();
+
+      let left = Math.round((e.clientX - offset_l));
+      let top = Math.round((e.clientY - offset_t));
+
+      console.log(left, top);
+      socket.emit('proc', {
+        img: src.data,
+        cols: src.cols,
+        rows: src.rows,
+        x: left, y: top, r : parseInt(r), g : parseInt(g), b : parseInt(b)
+      });
+    });
+    $('#red').change(() =>{
+      r = $('#red').val();
+      $('#color').css("background-color", `rgb(${r} , ${g} , ${b})`)
+    });
+    $('#green').change(() =>{
+      g = $('#green').val() ;
+      $('#color').css("background-color", `rgb(${r} , ${g} , ${b})`)
+    });
+    $('#blue').change(() =>{
+      b = $('#blue').val() ;
+      $('#color').css("background-color", `rgb(${r} , ${g} , ${b})`)
+    });
+  </script>
+</body>
+
+</html>

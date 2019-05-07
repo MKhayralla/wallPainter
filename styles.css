@@ -1,0 +1,17 @@
+body {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif !important ;
+    background-blend-mode: luminosity ;
+    background-color: beige ;
+}
+.view {
+    border-style: solid ;
+}
+#color {
+    width: 40px ;
+    height: 20px ;
+    background-color: rgb(100,100,100) ;
+}
+.jumbotron {
+    background-color: coral ;
+    color: azure ;
+}
